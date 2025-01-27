@@ -67,14 +67,21 @@ final class SQLiteNIOTests: XCTestCase {
             XCTAssertNotNil(rows.first?.column("CURRENT_TIMESTAMP").flatMap(Date.init(sqliteData:)))
         }
     }
+
     
+     func testDateReferencePointInequality() async throws {
+        let date = Date(timeIntervalSinceReferenceDate: 689658914.293192)
+        XCTAssertNotEqual(Date(timeIntervalSince1970: date.timeIntervalSince1970), date)
+        XCTAssertEqual(Date(timeIntervalSinceReferenceDate: date.timeIntervalSinceReferenceDate), date)
+    }
+
     func testTimestampStorage() async throws {
         try await withOpenedConnection { conn in
             // When the value is read back out of sqlite, it will have only microsecond precision, make sure we use a Date with
             // the same limit or else the test will fail.
-            let date = Date(timeIntervalSinceReferenceDate: 689658914.293192)
+        let date = Date(timeIntervalSinceReferenceDate: 689658914.293192)
             let rows = try await conn.query("SELECT ? as date", [date.sqliteData!])
-            XCTAssertEqual(rows.first?.column("date"), .float(date.timeIntervalSince1970))
+            XCTAssertEqual(rows.first?.column("date"), .float(date.timeIntervalSinceReferenceDate))
             XCTAssertEqual(rows.first?.column("date").flatMap(Date.init(sqliteData:))?.description, date.description)
             XCTAssertEqual(rows.first?.column("date").flatMap(Date.init(sqliteData:)), date)
             XCTAssertEqual(rows.first?.column("date").flatMap(Date.init(sqliteData:))?.timeIntervalSinceReferenceDate, date.timeIntervalSinceReferenceDate)
@@ -84,11 +91,11 @@ final class SQLiteNIOTests: XCTestCase {
     func testDateRoundToMicroseconds() throws {
         let secondsSinceUnixEpoch = 1667950774.6214828
         let secondsSinceSwiftReference = 689643574.621483
-        let timestamp = SQLiteData.float(secondsSinceUnixEpoch)
+        let timestamp = SQLiteData.float(secondsSinceSwiftReference)
         let date = try XCTUnwrap(Date(sqliteData: timestamp))
         XCTAssertEqual(date.timeIntervalSince1970, secondsSinceUnixEpoch)
         XCTAssertEqual(date.timeIntervalSinceReferenceDate, secondsSinceSwiftReference)
-        XCTAssertEqual(date.sqliteData, .float(secondsSinceUnixEpoch))
+        XCTAssertEqual(date.sqliteData, .float(secondsSinceSwiftReference))
     }
 
     func testTimestampStorageInDateColumnIntegralValue() async throws {
@@ -100,7 +107,7 @@ final class SQLiteNIOTests: XCTestCase {
             _ = try await conn.query(#"INSERT INTO test (date) VALUES (?)"#, [date.sqliteData!])
             let rows = try await conn.query("SELECT * FROM test")
             
-            XCTAssertTrue(rows.first?.column("date") == .float(date.timeIntervalSince1970) || rows.first?.column("date") == .integer(Int(date.timeIntervalSince1970)))
+            XCTAssertTrue(rows.first?.column("date") == .float(date.timeIntervalSinceReferenceDate) || rows.first?.column("date") == .integer(Int(date.timeIntervalSinceReferenceDate)))
             XCTAssertEqual(rows.first?.column("date").flatMap(Date.init(sqliteData:))?.description, date.description)
         }
     }
