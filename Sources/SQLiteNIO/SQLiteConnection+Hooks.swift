@@ -1,7 +1,7 @@
 import Foundation
 import NIOConcurrencyHelpers
 import NIOCore
-import CSQLite
+import NIOCSQLite
 
 // MARK: - Hook Types and Events
 

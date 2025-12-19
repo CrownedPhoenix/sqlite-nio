@@ -29,13 +29,14 @@ let package = Package(
             exclude: ["001-warnings-and-data-race.patch"]
         ),
         .target(
-            name: "CSQLite",
+            name: "NIOCSQLite",
+            path: "Sources/CSQLite",
             cSettings: sqliteCSettings
         ),
         .target(
             name: "SQLiteNIO",
             dependencies: [
-                .target(name: "CSQLite"),
+                .target(name: "NIOCSQLite"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "NIOCore", package: "swift-nio"),
                 .product(name: "NIOPosix", package: "swift-nio"),

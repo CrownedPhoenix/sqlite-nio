@@ -1,4 +1,4 @@
-import CSQLite
+import NIOCSQLite
 import Foundation
 
 public struct SQLiteError: Error, CustomStringConvertible, LocalizedError {
